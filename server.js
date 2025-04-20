@@ -139,8 +139,8 @@ app.post('/create-checkout-session', async (req, res) => {
       payment_intent_data: {
         capture_method: 'manual'
       },
-      success_url: `http://localhost:5500/frontend/pages/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  'http://localhost:5500/frontend/pages/concerts.html',
+      success_url: `https://s3.eu-west-1.amazonaws.com/ticketmasterplus.com/pages/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:  'https://s3.eu-west-1.amazonaws.com/ticketmasterplus.com/pages/concerts.html',
       metadata:    { concertName }
     });
 
@@ -166,5 +166,5 @@ app.get('/checkout-session', async (req, res) => {
 });
 
 app.listen(PORT, () =>
-  console.log(`📀 Backend running at http://localhost:${PORT}`)
+  console.log(`📀 Backend running`)
 );
