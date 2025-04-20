@@ -82,7 +82,7 @@ app.get('/concerts', async (_req, res) => {
       SELECT
         concertName    AS "concertName",
         location,
-        concertDate,
+        concertDate  AS "concertDate",
         artist,
         numTickets     AS "numTickets",
         ticketPrice    AS "ticketPrice"
