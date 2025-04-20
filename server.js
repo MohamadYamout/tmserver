@@ -1,9 +1,9 @@
 const express = require('express');
-const cors    = require('cors');
-const stripe  = require('stripe')('sk_test_51RFFTVP7nor4gZvlFZ5673pw9LycCABZp7VYnDU6Twq9Sz1bSy44KaWwMxMsVEMbgJ706I1PQJ4IqmdLINnQO3Eg002r8XHlQb');
+const cors = require('cors');
+const stripe = require('stripe')('sk_test_51RFFTVP7nor4gZvlFZ5673pw9LycCABZp7VYnDU6Twq9Sz1bSy44KaWwMxMsVEMbgJ706I1PQJ4IqmdLINnQO3Eg002r8XHlQb');
 const { Pool } = require('pg');
 
-const app  = express();
+const app = express();
 const PORT = 3000;
 
 // Signing secret from your Stripe Dashboard webhook
@@ -35,9 +35,9 @@ app.post(
     }
 
     if (event.type === 'checkout.session.completed') {
-      const session     = event.data.object;
+      const session = event.data.object;
       const concertName = session.metadata.concertName;
-      const client      = await pool.connect();
+      const client = await pool.connect();
 
       try {
         await client.query('BEGIN');
@@ -82,6 +82,7 @@ app.get('/concerts', async (_req, res) => {
       SELECT
         concertName    AS "concertName",
         location,
+        concertDate,
         artist,
         numTickets     AS "numTickets",
         ticketPrice    AS "ticketPrice"
@@ -122,7 +123,7 @@ app.post('/create-checkout-session', async (req, res) => {
       const priceDollars = parseFloat(rows[0].ticketprice);
       if (!isNaN(priceDollars)) unit_amount = Math.round(priceDollars * 100);
     }
-  } catch {}
+  } catch { }
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -140,8 +141,8 @@ app.post('/create-checkout-session', async (req, res) => {
         capture_method: 'manual'
       },
       success_url: `https://s3.eu-west-1.amazonaws.com/ticketmasterplus.com/pages/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  'https://s3.eu-west-1.amazonaws.com/ticketmasterplus.com/pages/concerts.html',
-      metadata:    { concertName }
+      cancel_url: 'https://s3.eu-west-1.amazonaws.com/ticketmasterplus.com/pages/concerts.html',
+      metadata: { concertName }
     });
 
     res.json({ sessionId: session.id });
@@ -156,9 +157,10 @@ app.get('/checkout-session', async (req, res) => {
   const { session_id } = req.query;
   try {
     const session = await stripe.checkout.sessions.retrieve(session_id);
-    const pi      = await stripe.paymentIntents.retrieve(session.payment_intent);
-    return res.json({ intent_status: pi.status ,
-      concertName: session.metadata.concertName 
+    const pi = await stripe.paymentIntents.retrieve(session.payment_intent);
+    return res.json({
+      intent_status: pi.status,
+      concertName: session.metadata.concertName
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });
